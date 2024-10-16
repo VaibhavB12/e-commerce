@@ -1,10 +1,5 @@
-import { Component } from "react";
-import {
-    addTask,
-    getTasks,
-    updateTask,
-    deleteTask,
-} from "./services/taskServices";
+import React, { Component } from "react";
+import { addTask, getTasks, updateTask, deleteTask } from '../src/Services/taskServices';
 
 class Tasks extends Component {
     state = { tasks: [], currentTask: "" };
@@ -27,44 +22,42 @@ class Tasks extends Component {
         const originalTasks = this.state.tasks;
         try {
             const { data } = await addTask({ task: this.state.currentTask });
-            const tasks = originalTasks;
-            tasks.push(data);
-            this.setState({ tasks, currentTask: "" });
+            this.setState({ tasks: [...originalTasks, data], currentTask: "" });
         } catch (error) {
             console.log(error);
         }
     };
 
-    handleUpdate = async (currentTask) => {
+    handleUpdate = async (id) => {
         const originalTasks = this.state.tasks;
         try {
             const tasks = [...originalTasks];
-            const index = tasks.findIndex((task) => task._id === currentTask);
-            tasks[index] = { ...tasks[index] };
-            tasks[index].completed = !tasks[index].completed;
+            const index = tasks.findIndex((task) => task._id === id);
+            tasks[index] = { ...tasks[index], completed: !tasks[index].completed };
             this.setState({ tasks });
-            await updateTask(currentTask, {
-                completed: tasks[index].completed,
-            });
+            await updateTask(id, { completed: tasks[index].completed });
         } catch (error) {
             this.setState({ tasks: originalTasks });
             console.log(error);
         }
     };
 
-    handleDelete = async (currentTask) => {
+    handleDelete = async (id) => {
         const originalTasks = this.state.tasks;
         try {
-            const tasks = originalTasks.filter(
-                (task) => task._id !== currentTask
-            );
+            const tasks = originalTasks.filter((task) => task._id !== id);
             this.setState({ tasks });
-            await deleteTask(currentTask);
+            await deleteTask(id);
         } catch (error) {
             this.setState({ tasks: originalTasks });
             console.log(error);
         }
     };
+
+    render() {
+        // You can return null or render the children as needed
+        return null;
+    }
 }
 
 export default Tasks;

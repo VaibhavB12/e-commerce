@@ -1,10 +1,53 @@
-import React from "react";
+import React, { Component } from "react";
 import Tasks from "./Tasks";
-import { Paper, TextField, Checkbox, Button } from "@material-ui/core";
-import "./App.css"; // Update your CSS file accordingly
+import { Paper, TextField, Checkbox, Button } from "@mui/material"; // Updated import for MUI
+import { addTask, updateTask, deleteTask } from './Services/taskServices'; // Add this line to import functions
+import "./App.css";
 
-class App extends Tasks {
+class App extends Component {
     state = { tasks: [], currentTask: "" };
+
+    handleChange = (event) => {
+        this.setState({ currentTask: event.currentTarget.value });
+    };
+
+    handleSubmit = async (event) => {
+        event.preventDefault();
+        const originalTasks = this.state.tasks;
+        try {
+            const { data } = await addTask({ task: this.state.currentTask });
+            const tasks = [...originalTasks, data]; // Add new task to the list
+            this.setState({ tasks, currentTask: "" });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    handleUpdate = async (id) => {
+        const originalTasks = this.state.tasks;
+        try {
+            const tasks = [...originalTasks];
+            const index = tasks.findIndex((task) => task._id === id);
+            tasks[index] = { ...tasks[index], completed: !tasks[index].completed };
+            this.setState({ tasks });
+            await updateTask(id, { completed: tasks[index].completed });
+        } catch (error) {
+            this.setState({ tasks: originalTasks });
+            console.log(error);
+        }
+    };
+
+    handleDelete = async (id) => {
+        const originalTasks = this.state.tasks;
+        try {
+            const tasks = originalTasks.filter((task) => task._id !== id);
+            this.setState({ tasks });
+            await deleteTask(id);
+        } catch (error) {
+            this.setState({ tasks: originalTasks });
+            console.log(error);
+        }
+    };
 
     render() {
         const { tasks, currentTask } = this.state;
@@ -21,7 +64,7 @@ class App extends Tasks {
                                 size="small"
                                 className="task-input"
                                 value={currentTask}
-                                required={true}
+                                required
                                 onChange={this.handleChange}
                                 placeholder="Add New TO-DO"
                             />
@@ -34,7 +77,7 @@ class App extends Tasks {
                                 <Paper key={task._id} className="task-item">
                                     <Checkbox
                                         checked={task.completed}
-                                        onClick={() => this.handleUpdate(task._id)}
+                                        onChange={() => this.handleUpdate(task._id)}
                                         color="primary"
                                     />
                                     <div className={task.completed ? "task-text completed" : "task-text"}>
@@ -54,4 +97,3 @@ class App extends Tasks {
 }
 
 export default App;
-
